@@ -13,6 +13,7 @@ import { Route as IndexRouteImport } from './routes/index'
 import { Route as SplatRouteImport } from './routes/$'
 import { Route as AppsRouteImport } from './routes/apps'
 import { Route as DevelopersRouteImport } from './routes/developers'
+import { Route as LeaderboardRouteImport } from './routes/leaderboard'
 import { Route as LoginRouteImport } from './routes/login'
 import { Route as AppsDevelopRouteImport } from './routes/apps/develop'
 import { Route as AppsLicensingRouteImport } from './routes/apps/licensing'
@@ -54,6 +55,11 @@ const AppsRoute = AppsRouteImport.update({
 const DevelopersRoute = DevelopersRouteImport.update({
   id: '/developers',
   path: '/developers',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const LeaderboardRoute = LeaderboardRouteImport.update({
+  id: '/leaderboard',
+  path: '/leaderboard',
   getParentRoute: () => rootRouteImport,
 } as any)
 const LoginRoute = LoginRouteImport.update({
@@ -172,6 +178,7 @@ export interface FileRoutesByFullPath {
   '/$': typeof SplatRoute
   '/apps': typeof AppsRouteWithChildren
   '/developers': typeof DevelopersRoute
+  '/leaderboard': typeof LeaderboardRoute
   '/login': typeof LoginRoute
   '/apps/develop': typeof AppsDevelopRoute
   '/apps/licensing': typeof AppsLicensingRoute
@@ -200,6 +207,7 @@ export interface FileRoutesByTo {
   '/$': typeof SplatRoute
   '/apps': typeof AppsRouteWithChildren
   '/developers': typeof DevelopersRoute
+  '/leaderboard': typeof LeaderboardRoute
   '/login': typeof LoginRoute
   '/apps/develop': typeof AppsDevelopRoute
   '/apps/licensing': typeof AppsLicensingRoute
@@ -229,6 +237,7 @@ export interface FileRoutesById {
   '/$': typeof SplatRoute
   '/apps': typeof AppsRouteWithChildren
   '/developers': typeof DevelopersRoute
+  '/leaderboard': typeof LeaderboardRoute
   '/login': typeof LoginRoute
   '/apps/develop': typeof AppsDevelopRoute
   '/apps/licensing': typeof AppsLicensingRoute
@@ -259,6 +268,7 @@ export interface FileRouteTypes {
     | '/$'
     | '/apps'
     | '/developers'
+    | '/leaderboard'
     | '/login'
     | '/apps/develop'
     | '/apps/licensing'
@@ -287,6 +297,7 @@ export interface FileRouteTypes {
     | '/$'
     | '/apps'
     | '/developers'
+    | '/leaderboard'
     | '/login'
     | '/apps/develop'
     | '/apps/licensing'
@@ -315,6 +326,7 @@ export interface FileRouteTypes {
     | '/$'
     | '/apps'
     | '/developers'
+    | '/leaderboard'
     | '/login'
     | '/apps/develop'
     | '/apps/licensing'
@@ -344,6 +356,7 @@ export interface RootRouteChildren {
   SplatRoute: typeof SplatRoute
   AppsRoute: typeof AppsRouteWithChildren
   DevelopersRoute: typeof DevelopersRoute
+  LeaderboardRoute: typeof LeaderboardRoute
   LoginRoute: typeof LoginRoute
   DevEmailsRoute: typeof DevEmailsRoute
   LegalPrivacyRoute: typeof LegalPrivacyRoute
@@ -393,6 +406,13 @@ declare module '@tanstack/react-router' {
       path: '/developers'
       fullPath: '/developers'
       preLoaderRoute: typeof DevelopersRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/leaderboard': {
+      id: '/leaderboard'
+      path: '/leaderboard'
+      fullPath: '/leaderboard'
+      preLoaderRoute: typeof LeaderboardRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/login': {
@@ -571,6 +591,7 @@ const rootRouteChildren: RootRouteChildren = {
   SplatRoute: SplatRoute,
   AppsRoute: AppsRouteWithChildren,
   DevelopersRoute: DevelopersRoute,
+  LeaderboardRoute: LeaderboardRoute,
   LoginRoute: LoginRoute,
   DevEmailsRoute: DevEmailsRoute,
   LegalPrivacyRoute: LegalPrivacyRoute,

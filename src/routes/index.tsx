@@ -1,12 +1,21 @@
-import { createFileRoute, Navigate } from "@tanstack/react-router";
-import { PublicLeaderboard } from "@/components/public-leaderboard";
-import { useCurrentUserState } from "@/lib/auth/use-current-user";
+import { createFileRoute } from "@tanstack/react-router";
+import { LandingPage } from "@/components/landing";
 
-export const Route = createFileRoute("/")({ component: RootPage });
-
-function RootPage() {
-  const { user, isPending } = useCurrentUserState();
-  if (isPending) return null;
-  if (!user) return <PublicLeaderboard />;
-  return <Navigate to="/$" params={{ _splat: "home" }} replace />;
-}
+/**
+ * The public homepage. It renders for every visitor — signed in or not — the
+ * way a marketing home does; the landing's own CTAs route into the app (`/home`)
+ * or into sign-in (`/login`) depending on session state.
+ */
+export const Route = createFileRoute("/")({
+  head: () => ({
+    meta: [
+      { title: "KOBA · Every rank you earn, on every server you play" },
+      {
+        name: "description",
+        content:
+          "KOBA links your PC and console accounts into one profile, scores the matches your servers report, and puts you on leaderboards your rivals can't argue with. Free for players.",
+      },
+    ],
+  }),
+  component: LandingPage,
+});
