@@ -1176,6 +1176,22 @@ html[data-theme="light"] img[src*="/brand/koba-mark"]:not(.profile-banner-mark) 
   filter: none;
 }
 
+/* …but "reads on both canvases" is only true of the keyline and the drop: the
+   letter fill is pure white, so 26.8% of the artwork disappears against the
+   white light-mode header and the logo degrades to an outline. Light mode swaps
+   in an ink-filled twin of the same drawing (red drop and black keyline
+   untouched, background still transparent).
+   Scoped to the two wordmarks, which only ever sit on the light canvas;
+   `koba-mark` is excluded because both of its placements are on the dark hero,
+   and `.profile-banner-mark` is the dark shop/profile banner slot. */
+html[data-theme="light"] img[src$="koba-wordmark-tight.png"] {
+  content: url("/brand/koba-wordmark-tight-ink.png");
+}
+
+html[data-theme="light"] img[src$="koba-wordmark.png"]:not(.profile-banner-mark) {
+  content: url("/brand/koba-wordmark-ink.png");
+}
+
 html[data-theme="light"] .site-social-icon {
   filter: invert(1) brightness(0);
 }

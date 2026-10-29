@@ -205,8 +205,7 @@ export function PublicLeaderboard() {
 
           <aside className="grid content-start gap-4">
             <div className="rounded-2xl border border-border bg-bg-elevated p-4">
-              <p className="text-[11px] font-semibold tracking-[0.14em] text-muted uppercase">Sign in to compete</p>
-              <ul className="mt-3 grid gap-1.5 text-sm text-muted">
+              <ul className="grid gap-1.5 text-sm text-muted">
                 <li>• Track your ranking</li>
                 <li>• Sync console & PC accounts</li>
                 <li>• Join clans and challenge rivals</li>
