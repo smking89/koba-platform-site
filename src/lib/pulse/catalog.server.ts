@@ -1,4 +1,5 @@
 import { getSql } from "@/lib/db";
+import { eligiblePlayerIds } from "@/lib/competition/eligibility.server";
 import { DEFAULT_WEIGHTS, type ActionId, type Candidate, type Compliance, type Kind, type Player, type Region, type SponsorTarget } from "@/engine/types";
 import { requireConfigToken } from "@/lib/pulse/gate.server";
 import type { GateDenied, KobaScoreRow, PortalId, PulseCatalog } from "@/lib/pulse/types";
@@ -128,8 +129,7 @@ function mapCandidate(row: Record<string, unknown>, kind: Kind): Candidate {
 export async function readCatalog(): Promise<PulseCatalog> {
   const sql = await getSql();
   const playerRows = await sql<Record<string, unknown>>`select * from players order by ordinal`;
-  const scoreRows = await sql<Record<string, unknown>>`select * from koba_scores`;
-  const serverRows = await sql<Record<string, unknown>>`select * from servers order by ordinal`;
+  const scoreRows = await sql<Record<string, unknown>>`select * from koba_scores`;  const serverRows = await sql<Record<string, unknown>>`select * from servers order by ordinal`;
   const itemRows = await sql<Record<string, unknown>>`select * from discovery_items order by ordinal`;
   const configRows = await sql<{ weights: unknown }>`select weights from ranker_config where id = 'global'`;
   const boostRows = await sql<{ item_id: string; ends_ms: unknown }>`
@@ -149,10 +149,11 @@ export async function readCatalog(): Promise<PulseCatalog> {
   const spent: Record<string, number> = {};
   for (const row of spentRows) spent[row.actor_id] = num(row.n);
   const rawWeights = asJson<Record<string, number>>(configRows[0]?.weights, {});
+  const eligible = await eligiblePlayerIds();
 
   return {
     source: "database",
-    players: playerRows.map(mapPlayer),
+    players: playerRows.filter((row) => eligible.has(String(row.id))).map(mapPlayer),
     candidates: [
       ...serverRows.map((row) => mapCandidate(row, "server")),
       ...itemRows.map((row) => mapCandidate(row, String(row.kind) as Kind)),
@@ -160,14 +161,16 @@ export async function readCatalog(): Promise<PulseCatalog> {
     weights: cleanWeights(rawWeights),
     boosts,
     spent,
-    scores: scoreRows.map((row) => ({
-      playerId: String(row.player_id),
-      gameId: String(row.game_id),
-      normalizedScore: num(row.normalized_score),
-      confidenceLow: num(row.confidence_low),
-      confidenceHigh: num(row.confidence_high),
-      activityIndex: num(row.activity_index),
-    })),
+    scores: scoreRows
+      .filter((row) => eligible.has(String(row.player_id)))
+      .map((row) => ({
+        playerId: String(row.player_id),
+        gameId: String(row.game_id),
+        normalizedScore: num(row.normalized_score),
+        confidenceLow: num(row.confidence_low),
+        confidenceHigh: num(row.confidence_high),
+        activityIndex: num(row.activity_index),
+      })),
   };
 }
 

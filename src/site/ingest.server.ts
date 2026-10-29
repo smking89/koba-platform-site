@@ -1,4 +1,5 @@
 import { inspectPayload, mintToken, noteRate, readToken, type Gate } from "./ingest";
+import { actorEligibility } from "@/lib/competition/eligibility.server";
 
 const SECRET = "koba-ingest-preview-key";
 
@@ -90,6 +91,28 @@ export async function testIngest(raw: string, token: string, now = Date.now()) {
 
   const inspected = inspectPayload(raw, Math.floor(now / 1000));
   gates.push(...inspected.gates);
+
+  // Score permission: an internal seat or an in-game admin/owner/moderator must
+  // never move a score, because it can award itself anything the server reports.
+  // Checked before the event is accepted, so nothing downstream ever sees it.
+  const actor = inspected.event?.data_payload.actor_identity ?? "";
+  const eligibility = actor ? await actorEligibility(actor) : null;
+  const permitted = eligibility === null || eligibility.eligible;
+  gates.push({
+    id: "permission",
+    name: "Score permission",
+    pass: permitted,
+    detail: !actor
+      ? "No actor on this event."
+      : eligibility === null
+        ? "Unknown to KOBA, so there is no score row to move."
+        : eligibility.reason === "staff"
+          ? `Internal seat (${eligibility.staffRole}). Staff are excluded from every board.`
+          : eligibility.eligible
+            ? "No in-game admin, owner or moderator permission."
+            : `Holds in-game ${eligibility.ingameRole}. Score stays frozen until the connector reports none.`,
+  });
+
   const ok = gates.every((gate) => gate.pass) && inspected.event !== null;
   const forgery = inspected.gates.some((gate) => gate.id === "forgery" && !gate.pass);
   push(series.ingress, (series.ingress.at(-1) ?? 0) + 1);

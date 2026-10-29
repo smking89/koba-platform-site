@@ -1,4 +1,5 @@
 import { getSql } from "@/lib/db";
+import { eligiblePlayerIds } from "@/lib/competition/eligibility.server";
 import type { Identity } from "@/platform/engine";
 
 function asStringArray(value: unknown): string[] {
@@ -70,9 +71,16 @@ function mapRowToIdentity(row: Record<string, unknown>): Identity {
   };
 }
 
-/** Real players, mapped onto the simulated engine's Identity shape (see engine.ts:53) so its pure ranking/combat math keeps working unmodified. */
+/**
+ * Real players, mapped onto the simulated engine's Identity shape (see engine.ts:53) so its pure ranking/combat math keeps working unmodified.
+ *
+ * Staff seats and identities holding in-game admin/owner/moderator are dropped
+ * before the rows leave the server - the board never renders them at all, so no
+ * caller can accidentally rank one.
+ */
 export async function loadRealIdentities(): Promise<Identity[]> {
   const sql = await getSql();
   const rows = await sql<Record<string, unknown>>`select * from players order by ordinal`;
-  return rows.map(mapRowToIdentity);
+  const eligible = await eligiblePlayerIds();
+  return rows.filter((row) => eligible.has(String(row.id))).map(mapRowToIdentity);
 }
